@@ -1,1 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
 
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#050816"
+    >
+
+    <title>VISH</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+    <!-- =================================
+         AUTH
+    ================================== -->
+
+    <main id="authScreen" class="screen">
+
+        <section class="auth-card">
+
+            <div class="logo">
+                VISH
+            </div>
+
+            <p class="tagline">
+                Your galaxy. Your people. Your moments.
+            </p>
+
+
+            <!-- LOGIN -->
+
+            <form id="loginForm">
+
+                <h2>Enter your galaxy</h2>
+
+                <label>
+                    VISH ID
+                </label>
+
+                <input
+                    id="loginVishId"
+                    type="text"
+                    placeholder="@your_vish_id"
+                    autocomplete="username"
+                    required
+                >
+
+
+                <label>
+                    Password
+                </label>
+
+                <input
+                    id="loginPassword"
+                    type="password"
+                    placeholder="Your password"
+                    autocomplete="current-password"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Enter Galaxy
+                </button>
+
+            </form>
+
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+
+            <!-- REGISTER -->
+
+            <form
+                id="registerForm"
+                class="register-form"
+            >
+
+                <h2>Create your VISH</h2>
+
+                <label>
+                    VISH ID
+                </label>
+
+                <input
+                    id="registerVishId"
+                    type="text"
+                    placeholder="your_vish_id"
+                    autocomplete="username"
+                    minlength="3"
+                    maxlength="20"
+                    required
+                >
+
+                <small>
+                    3-20 lowercase letters, numbers or _
+                </small>
+
+
+                <label>
+                    Display name
+                </label>
+
+                <input
+                    id="registerDisplayName"
+                    type="text"
+                    placeholder="Your name"
+                    maxlength="40"
+                    required
+                >
+
+
+                <label>
+                    Password
+                </label>
+
+                <input
+                    id="registerPassword"
+                    type="password"
+                    placeholder="Minimum 8 characters"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="secondary-button"
+                >
+                    Create VISH ID
+                </button>
+
+            </form>
+
+
+            <p
+                id="authMessage"
+                class="message"
+            ></p>
+
+        </section>
+
+    </main>
+
+
+    <!-- =================================
+         APP
+    ================================== -->
+
+    <main
+        id="appScreen"
+        class="app-screen hidden"
+    >
+
+        <header class="topbar">
+
+            <div>
+                <div class="brand">
+                    VISH
+                </div>
+
+                <div
+                    id="currentVishId"
+                    class="small-text"
+                ></div>
+            </div>
+
+
+            <div class="top-actions">
+
+                <button
+                    id="logoutButton"
+                    class="ghost-button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <section class="galaxy-layout">
+
+            <!-- GALAXY -->
+
+            <div class="galaxy-panel">
+
+                <div class="galaxy-header">
+
+                    <div>
+                        <h1>Your Galaxy</h1>
+
+                        <p>
+                            Your friends live here.
+                        </p>
+                    </div>
+
+
+                    <div class="mood-control">
+
+                        <label>
+                            Mood
+                        </label>
+
+                        <select id="moodSelect">
+
+                            <option value="calm">
+                                😌 Calm
+                            </option>
+
+                            <option value="happy">
+                                😄 Happy
+                            </option>
+
+                            <option value="low">
+                                😔 Low
+                            </option>
+
+                            <option value="angry">
+                                😡 Angry
+                            </option>
+
+                            <option value="love">
+                                ❤️ Love
+                            </option>
+
+                            <option value="excited">
+                                🤯 Excited
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="galaxy"
+                    class="galaxy"
+                >
+
+                    <div class="stars"></div>
+
+                    <div class="core-star">
+                        ✦
+                    </div>
+
+                    <div
+                        id="friendPlanets"
+                        class="friend-planets"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SIDE -->
+
+            <aside class="side-panel">
+
+                <!-- SEARCH -->
+
+                <section class="panel-card">
+
+                    <h3>
+                        Find someone
+                    </h3>
+
+                    <div class="search-row">
+
+                        <input
+                            id="searchInput"
+                            type="text"
+                            placeholder="@vish_id"
+                        >
+
+                        <button
+                            id="searchButton"
+                            class="primary-button small"
+                        >
+                            Search
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="searchResults"
+                        class="results"
+                    ></div>
+
+                </section>
+
+
+                <!-- REQUESTS -->
+
+                <section class="panel-card">
+
+                    <h3>
+                        Friend Requests
+                    </h3>
+
+                    <div
+                        id="friendRequests"
+                        class="results"
+                    ></div>
+
+                </section>
+
+
+                <!-- FRIENDS -->
+
+                <section class="panel-card">
+
+                    <h3>
+                        Friends
+                    </h3>
+
+                    <div
+                        id="friendsList"
+                        class="results"
+                    ></div>
+
+                </section>
+
+            </aside>
+
+        </section>
+
+
+        <!-- =================================
+             CHAT
+        ================================== -->
+
+        <section
+            id="chatPanel"
+            class="chat-panel hidden"
+        >
+
+            <header class="chat-header">
+
+                <div>
+
+                    <div
+                        id="chatFriendName"
+                        class="chat-name"
+                    >
+                        Friend
+                    </div>
+
+                    <div
+                        id="chatFriendVishId"
+                        class="small-text"
+                    ></div>
+
+                </div>
+
+
+                <button
+                    id="closeChatButton"
+                    class="ghost-button"
+                >
+                    Close
+                </button>
+
+            </header>
+
+
+            <div
+                id="messages"
+                class="messages"
+            ></div>
+
+
+            <div
+                id="typingIndicator"
+                class="typing"
+            ></div>
+
+
+            <form
+                id="messageForm"
+                class="message-form"
+            >
+
+                <input
+                    id="messageInput"
+                    type="text"
+                    maxlength="4000"
+                    placeholder="Launch a message..."
+                    autocomplete="off"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    class="launch-button"
+                >
+                    🚀
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <div
+        id="toast"
+        class="toast"
+    ></div>
+
+
+    <script
+        src="/socket.io/socket.io.js"
+    ></script>
+
+    <script
+        src="app.js"
+    ></script>
+
+</body>
+  </html>
