@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AU AI Student Assistant</title>
+<style>
+:root{--bg:#eef2f6;--card:#fff;--ink:#16213a;--mute:#5d6b82;--line:#d9e0ea;--accent:#0e8f7e;--ai:#fff;--me:#16213a;--meink:#fff;--warn:#b6452c}
+[data-theme=dark]{--bg:#0f1624;--card:#18223a;--ink:#e8edf6;--mute:#93a1ba;--line:#2a3652;--accent:#2fc4ae;--me:#2fc4ae;--meink:#06201b;--warn:#ff8a6b}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+button,input,select{font:inherit;color:var(--ink)}button{cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:7px 12px;min-height:38px}
+input,select{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:8px 12px;min-height:38px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button.p{background:var(--accent);color:#fff;border-color:transparent;font-weight:600}
+[hidden]{display:none!important}
+#login{min-height:100%;display:grid;place-items:center;padding:20px}
+#login form{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;width:100%;max-width:380px;display:grid;gap:12px}
+#login h1{margin:0;font-size:22px}.mute{color:var(--mute)}.err{color:var(--warn)}
+#app{display:grid;grid-template-columns:230px 1fr;height:100%}
+aside{background:var(--card);border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+aside b{padding:6px 10px 12px;font-size:17px}
+aside button{border:0;background:none;text-align:left;display:flex;justify-content:space-between;align-items:center}
+aside button.on{background:var(--bg);font-weight:700;color:var(--accent)}
+.badge{background:var(--accent);color:#fff;border-radius:99px;font-size:12px;padding:0 7px}
+.col{display:flex;flex-direction:column;min-width:0;height:100%}
+.top{display:flex;gap:8px;padding:max(10px,env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line);align-items:center}
+.top form{flex:1;display:flex}.top input{flex:1;min-width:0}#menu{display:none}
+main{flex:1;overflow-y:auto;padding:16px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}.head h1{font-size:20px;margin:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 8px;display:flex;justify-content:space-between;gap:8px}
+.tag{font-size:12px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:0 8px}
+dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:4px 14px}dt{color:var(--mute)}dd{margin:0;font-weight:600}
+.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.grid>.card{margin:0}
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.skel{height:60px;border-radius:10px;background:var(--line);opacity:.5;animation:p 1.2s infinite}@keyframes p{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.skel{animation:none}}
+.msg{max-width:90%;padding:9px 13px;border-radius:16px;background:var(--ai);border:1px solid var(--line);margin-bottom:10px;white-space:pre-wrap;width:fit-content}
+.msg.me{margin-left:auto;background:var(--me);color:var(--meink);border:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.note{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-top:7px;flex:none}.dot.r{background:transparent}
+#chat{display:flex;flex-direction:column;height:100%}#chat .log{flex:1;overflow-y:auto}
+@media(max-width:860px){#app{grid-template-columns:1fr}aside{position:fixed;inset:0 25% 0 0;z-index:5;transform:translateX(-100%);transition:transform .2s;max-width:280px}aside.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.4)}#menu{display:block}}
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <form id="lf">
+    <h1>AU AI Student Assistant</h1>
+    <span class="mute">Sign in to see your academic details.</span>
+    <input id="lid" placeholder="Register or roll number" autocomplete="username" required maxlength="14">
+    <label class="mute">Date of birth<input id="ldob" type="date" required style="width:100%"></label>
+    <span id="lerr" class="err" role="alert"></span>
+    <button class="p" id="lbtn">Sign in</button>
+  </form>
+</div>
+<div id="app" hidden>
+  <aside id="nav"></aside>
+  <div class="col">
+    <div class="top">
+      <button id="menu" aria-label="Open menu">☰</button>
+      <form id="sf"><input id="sq" placeholder="Search anything, e.g. “subjects I failed”" aria-label="Search"></form>
+    </div>
+    <main id="main"></main>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const NAV=[['dashboard','Dashboard'],['chat','Ask AI'],['results','Results'],['timetable','Timetable'],['exams','Exams'],['courses','Courses'],['attendance','Attendance'],['fees','Fees'],['notifications','Notifications'],['profile','Profile'],['settings','Settings']];
+const LABEL={profile:'Profile',results:'Result',timetable:'Timetable',exams:'Exam',courses:'Course',attendance:'Attendance',fees:'Fee',notifications:'Notification'};
+const PROMPTS=['Show my result','Show my timetable','When is my next exam?','Show my subjects','Show my profile','Check my attendance','Show university notifications'];
+let me=null,chatEl=null,cur='dashboard',showBadge=localStorage.getItem('nb')!=='0';
+document.documentElement.dataset.theme=localStorage.getItem('theme')||'light';
+
+async function api(url,opt){
+  try{const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opt});const j=await r.json().catch(()=>({}));
+    if(r.status===401){showLogin(j.text);return{ok:false,...j}}return r.ok?{ok:true,data:j}:{ok:false,...j}}
+  catch{return{ok:false,error:'network',text:"Can't reach the server. Check your connection."}}
+}
+function showLogin(msg){me=null;chatEl=null;$('#app').hidden=true;$('#login').hidden=false;$('#lerr').textContent=msg||''}
+function showApp(){$('#login').hidden=true;$('#app').hidden=false;buildNav();go('dashboard');badge()}
+
+$('#lf').onsubmit=async e=>{e.preventDefault();$('#lbtn').disabled=true;$('#lerr').textContent='';
+  const r=await api('/api/login',{method:'POST',body:JSON.stringify({id:$('#lid').value,dob:$('#ldob').value})});
+  $('#lbtn').disabled=false;if(!r.ok){$('#lerr').textContent=r.text;return}me=r.data;$('#ldob').value='';showApp()};
+
+function buildNav(){const n=$('#nav');n.replaceChildren(el('b','',me.profile?.name?'AU AI Student Assistant':'AU AI Student Assistant'));
+  NAV.forEach(([id,l])=>{const b=el('button','',l);b.dataset.id=id;b.onclick=()=>go(id);if(id==='notifications')b.append(el('span','badge'));n.append(b)});
+  if(me.mode==='demo')n.append(el('small','mute','Demo data (development mode)'))}
+async function badge(){const r=await api('/api/section/notifications');const b=document.querySelector('[data-id=notifications] .badge');if(!b)return;
+  const u=r.ok&&r.data.data?r.data.data.filter(x=>!x.read).length:0;b.textContent=u;b.hidden=!u||!showBadge}
+$('#menu').onclick=()=>$('#nav').classList.toggle('open');
+
+function go(id){cur=id;$('#nav').classList.remove('open');document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  const m=$('#main');m.replaceChildren();m.style.padding='';V[id](m)}
+
+// ---- shared renderers ----
+function table(head,rows){const w=el('div','scroll'),t=el('table'),h=el('tr');head.forEach(x=>h.append(el('th','',x)));t.append(h);
+  rows.forEach(r=>{const tr=el('tr');r.forEach(x=>tr.append(el('td','',x??'—')));t.append(tr)});w.append(t);return w}
+function dl(fields){const d=el('dl');fields.forEach(([k,v])=>d.append(el('dt','',k),el('dd','',v)));return d}
+function card(c){const d=el('div','card');if(c.kind==='profile')d.append(dl(c.fields));
+  else{const h=el('h2','',c.title);if(c.badge)h.append(el('span','tag',c.badge));d.append(h,table(c.head,c.rows))}return d}
+function retry(box,text,fn){const d=el('div','card');d.append(el('p','err',text||'Unable to retrieve this right now.'));const b=el('button','p','Try again');b.onclick=fn;d.append(b);box.append(d)}
+async function panel(box,name,render,force){
+  box.replaceChildren(el('div','skel'));
+  const r=await api('/api/section/'+name+(force?'?force=1':''));box.replaceChildren();
+  if(!r.ok){if(r.error!=='expired')retry(box,r.text,()=>panel(box,name,render,true));return null}
+  if(r.data.data==null){const d=el('div','card');d.append(el('p','',LABEL[name]+' information is currently unavailable.'));const b=el('button','','Check again');b.onclick=()=>panel(box,name,render,true);d.append(b);box.append(d);return null}
+  render(box,r.data.data);return r.data.data}
+function page(m,title,extra){const h=el('div','head');h.append(el('h1','',title));const body=el('div');m.append(h,body);return{h,body}}
+function section(m,name,title,render){const {h,body}=page(m,title);const b=el('button','','Refresh');h.append(b);
+  const load=f=>panel(body,name,render,f);b.onclick=()=>load(true);load()}
+const today=()=>new Date().toISOString().slice(0,10);
+
+// ---- views ----
+const V={
+dashboard(m){const {h,body}=page(m,'Welcome, '+(me.profile.name||'student'));
+  const g=el('div','grid'),qa=el('div','qa');NAV.filter(n=>n[0]!=='dashboard').forEach(([id,l])=>{const b=el('button','',id==='chat'?'Ask AI':l);b.onclick=()=>go(id);qa.append(b)});
+  const mk=t=>{const c=el('div','card');c.append(el('h2','',t));const x=el('div');c.append(x);g.append(c);return x};
+  const p=mk('Profile summary'),q=mk('Quick actions');q.append(qa);
+  const r=mk('Latest result'),e=mk('Upcoming exams'),t=mk("Today's timetable"),n=mk('Unread notifications');body.append(g);
+  panel(p,'profile',(b,d)=>b.append(dl([['Programme',d.programme],['Department',d.department],['Semester',d.semester]].filter(f=>f[1]!=null))));
+  panel(r,'results',(b,d)=>{const x=[...d].sort((a,c)=>a.semester-c.semester).at(-1);b.append(el('p','tag','Semester '+x.semester+' · '+(x.status??'—')),table(['Subject','Total','Result'],x.subjects.map(s=>[s.name,s.total,s.result])))});
+  panel(e,'exams',(b,d)=>{const u=d.filter(x=>x.date>=today()).sort((a,c)=>a.date.localeCompare(c.date));b.append(u.length?table(['Date','Subject'],u.map(x=>[x.date,x.subject])):el('p','mute','No upcoming exams.'))});
+  panel(t,'timetable',(b,d)=>{const day=new Date().toLocaleDateString('en-US',{weekday:'long'}),x=d.filter(y=>y.day===day);b.append(x.length?table(['Time','Subject','Room'],x.map(y=>[y.time,y.subject,y.room])):el('p','mute','No classes today.'))});
+  panel(n,'notifications',(b,d)=>{const u=d.filter(x=>!x.read);b.append(u.length?table(['Date','Title'],u.map(x=>[x.date,x.title])):el('p','mute','All caught up.'))})},
+
+chat(m){m.style.padding='0';if(!chatEl){chatEl=el('div');chatEl.id='chat';const log=el('div','log');log.style.padding='16px';
+    const chips=el('div','chips');PROMPTS.forEach(p=>{const b=el('button','',p);b.onclick=()=>send(p);chips.append(b)});
+    const f=el('form'),i=el('input');i.placeholder='Ask about your results, exams, timetable…';i.maxLength=500;i.style.flex='1';i.setAttribute('aria-label','Message');
+    f.style.cssText='display:flex;gap:8px;padding:10px 16px';const sb=el('button','p','Send');f.append(i,sb);
+    chatEl.log=log;chatEl.i=i;log.append(el('div','msg','Hi'+(me.profile?.name?', '+me.profile.name:'')+'! Ask me anything about your studies.'),chips);
+    f.onsubmit=e=>{e.preventDefault();const t=i.value.trim();if(t){i.value='';send(t)}};chatEl.append(log,f)}
+  m.append(chatEl);chatEl.log.scrollTop=chatEl.log.scrollHeight},
+
+results(m){section(m,'results','Results',(b,d)=>{const s=[...d].sort((a,c)=>a.semester-c.semester),tools=el('div','tools'),sel=el('select'),f=el('input'),out=el('div');
+  sel.setAttribute('aria-label','Semester');s.forEach(r=>sel.append(new Option('Semester '+r.semester,r.semester)));sel.value=s.at(-1).semester;f.placeholder='Filter subjects';f.setAttribute('aria-label','Filter subjects');tools.append(sel,f);b.append(tools,out);
+  const draw=()=>{const r=s.find(x=>String(x.semester)===sel.value),q=f.value.toLowerCase(),rows=r.subjects.filter(x=>(x.name+x.code).toLowerCase().includes(q));
+    out.replaceChildren();out.append(card(rows.length?{title:'Semester '+r.semester,badge:r.status,head:['Code','Subject','Internal','External','Total','Grade','Result'],rows:rows.map(x=>[x.code,x.name,x.internal,x.external,x.total,x.grade,x.result])}:{kind:'t',title:'Semester '+r.semester,badge:r.status,head:['Subjects'],rows:[['No subjects match your filter.']]}))};
+  sel.onchange=draw;f.oninput=draw;draw()})},
+
+timetable(m){section(m,'timetable','Timetable',(b,d)=>{const sel=el('select'),out=el('div');sel.setAttribute('aria-label','Day');sel.append(new Option('All days',''));[...new Set(d.map(x=>x.day))].forEach(x=>sel.append(new Option(x,x)));b.append(sel,out);
+  const draw=()=>{out.replaceChildren(card({title:sel.value||'Weekly timetable',head:['Day','Time','Subject','Room','Faculty'],rows:d.filter(x=>!sel.value||x.day===sel.value).map(x=>[x.day,x.time,x.subject,x.room,x.faculty])}))};sel.onchange=draw;draw()})},
+
+exams(m){section(m,'exams','Exams',(b,d)=>{const sel=el('select'),f=el('input'),out=el('div'),tools=el('div','tools');['All','Upcoming','Completed'].forEach(x=>sel.append(new Option(x)));sel.setAttribute('aria-label','Filter');f.placeholder='Search exams';f.setAttribute('aria-label','Search exams');tools.append(sel,f);b.append(tools,out);
+  const draw=()=>{const rows=d.map(x=>[x.date,x.subject,x.session,x.semester,x.date>=today()?'Upcoming':'Completed']).filter(r=>(sel.value==='All'||r[4]===sel.value)&&r[1].toLowerCase().includes(f.value.toLowerCase()));
+    out.replaceChildren(card(rows.length?{title:'Examinations',head:['Date','Subject','Session','Sem','Status'],rows}:{title:'Examinations',head:['Result'],rows:[['No exams match.']]}))};sel.onchange=draw;f.oninput=draw;draw()})},
+
+courses(m){section(m,'courses','Courses',(b,d)=>b.append(card({title:'Subjects',head:['Code','Subject','Credits','Sem'],rows:d.map(x=>[x.code,x.name,x.credits,x.semester])})))},
+attendance(m){section(m,'attendance','Attendance',(b,d)=>b.append(card({title:'Attendance',head:['Subject','Present','Absent','%'],rows:d.map(x=>[x.subject,x.present,x.absent,x.percentage])})))},
+fees(m){section(m,'fees','Fees',(b,d)=>b.append(card({kind:'profile',fields:[['Status',d.status],['Amount due',d.amountDue],['Paid',d.paid],['Due date',d.dueDate]].filter(f=>f[1]!=null)})))},
+profile(m){section(m,'profile','Profile',(b,d)=>b.append(card({kind:'profile',fields:[['Name',d.name],['Register number',d.regNo],['Roll number',d.rollNo],['Programme',d.programme],['Department',d.department],['Faculty',d.faculty],['Academic year',d.academicYear],['Semester',d.semester]].filter(f=>f[1]!=null)})))},
+
+notifications(m){const {h,body}=page(m,'Notifications'),ra=el('button','','Mark all as read'),rf=el('button','','Refresh');h.append(ra,rf);
+  const load=f=>panel(body,'notifications',(b,d)=>{d.forEach(n=>{const r=el('div','note'),t=el('div');r.append(el('span','dot'+(n.read?' r':'')),t);t.append(el('b','',n.title),el('div','mute',n.date),el('div','',n.body));
+    r.onclick=async()=>{if(!n.read){await api('/api/notifications/read',{method:'POST',body:JSON.stringify({ids:[n.id]})});load();badge()}};b.append(r)})},f);
+  ra.onclick=async()=>{await api('/api/notifications/read',{method:'POST',body:JSON.stringify({all:true})});load();badge()};rf.onclick=()=>load(true);load()},
+
+search(m,q){page(m,'Search: '+q);const b=el('div');m.append(b);b.append(el('div','skel'));
+  api('/api/search?q='+encodeURIComponent(q)).then(r=>{b.replaceChildren();if(!r.ok){if(r.error!=='expired')retry(b,r.text,()=>V.search((m.replaceChildren(),m),q));return}draw(b,r.data)})},
+
+settings(m){const {body}=page(m,'Settings'),c=(t,...n)=>{const d=el('div','card');d.append(el('h2','',t),...n);body.append(d);return d};
+  c('Account',dl([['Signed in as',me.profile?.name??'—'],['Register number',me.profile?.regNo??'—']]));
+  const th=el('select');['light','dark'].forEach(x=>th.append(new Option(x)));th.value=document.documentElement.dataset.theme;th.setAttribute('aria-label','Theme');th.onchange=()=>{document.documentElement.dataset.theme=th.value;localStorage.setItem('theme',th.value)};c('Theme',th);
+  const cb=el('input');cb.type='checkbox';cb.checked=showBadge;cb.onchange=()=>{showBadge=cb.checked;localStorage.setItem('nb',cb.checked?'1':'0');badge()};const lb=el('label','','  Show unread notification count');lb.prepend(cb);c('Notifications',lb);
+  c('Privacy',el('p','mute','Your records are fetched for this session only, kept in server memory, and removed when you sign out or the session expires (30 minutes of inactivity).'));
+  const cl=el('button','','Clear my session data'),lo=el('button','p','Log out');
+  cl.onclick=async()=>{await api('/api/clear',{method:'POST'});chatEl=null;cl.textContent='Cleared'};lo.onclick=async()=>{await api('/api/logout',{method:'POST'});showLogin('You have been signed out.')};
+  c('Session',cl,document.createTextNode(' '),lo)}
+};
+function draw(box,r){if(r.text)box.append(Object.assign(el('div','msg'),{textContent:r.text}));(r.cards||[]).forEach(c=>box.append(card(c)))}
+async function send(text){go('chat');const log=chatEl.log;log.append(el('div','msg me',text));const w=el('div','msg','…');log.append(w);log.scrollTop=log.scrollHeight;
+  const r=await api('/api/chat',{method:'POST',body:JSON.stringify({message:text})});w.remove();
+  if(!r.ok){if(r.error!=='expired'){const e=el('div','msg err',r.text);const b=el('button','','Try again');b.onclick=()=>{e.remove();send(text)};e.append(document.createElement('br'),b);log.append(e)}}else draw(log,r.data);log.scrollTop=log.scrollHeight}
+$('#sf').onsubmit=e=>{e.preventDefault();const q=$('#sq').value.trim();if(!q)return;cur='search';document.querySelectorAll('#nav button').forEach(b=>b.classList.remove('on'));const m=$('#main');m.replaceChildren();V.search(m,q)};
+(async()=>{const r=await api('/api/me');if(r.ok){me=r.data;showApp()}else if(r.error!=='expired')showLogin(r.text);else $('#login').hidden=false})();
+</script>
+</body>
+</html>
